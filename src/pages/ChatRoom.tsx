@@ -336,7 +336,7 @@ const ChatRoom = () => {
                 >
                   {message.text && <p className="break-words">{message.text}</p>}
                   {message.gifUrl && (
-                    <img src={message.gifUrl} alt="GIF" className="rounded-lg" re/>
+                    <img src={message.gifUrl} alt="GIF" className="rounded-lg"/>
                   )}
                   <span className="text-xs text-white/60 mt-1 block">
                     {new Date(message.timestamp).toLocaleTimeString()}
