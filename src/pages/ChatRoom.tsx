@@ -1,21 +1,25 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
 import GradientCircles from "@/components/GradientCircles";
 import GlassButton from "@/components/GlassButton";
 import { Send, Copy, LogOut, Info } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface Message {
   id: string;
   text: string;
-  sender: "me" | "other";
+  sender: string;
   timestamp: number;
+  roomID: string;
 }
+
+// Initialize socket connection
+const socket = io("https://transientalk-socket.onrender.com/"); // Replace with your backend URL
 
 const ChatRoom = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -25,18 +29,31 @@ const ChatRoom = () => {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+  // Connect to the room
+  useEffect(() => {
+    if (roomId) {
+      socket.emit("joinRoom", roomId);
+      console.log(`Joined room: ${roomId}`);
+    }
 
-  const handleCopyRoomId = () => {
-    navigator.clipboard.writeText(roomId || "");
-    toast({
-      title: "Room ID copied!",
-      description: "Share this with your contact to join the chat.",
+    return () => {
+      socket.disconnect(); // Disconnect when the component unmounts
+    };
+  }, [roomId]);
+
+  // Listen for incoming chat messages
+  useEffect(() => {
+    socket.on("chatMessage", (msg: Message) => {
+      setMessages((prev) => [...prev, msg]);
     });
-  };
+
+    return () => {
+      socket.off("chatMessage");
+    };
+  }, []);
 
   const handleSend = () => {
     if (!newMessage.trim()) return;
@@ -44,40 +61,33 @@ const ChatRoom = () => {
     const message: Message = {
       id: Math.random().toString(36).substring(7),
       text: newMessage,
-      sender: "me",
+      sender: socket.id,
       timestamp: Date.now(),
+      roomID: roomId || "",
     };
 
-    setMessages((prev) => [...prev, message]);
+    // Emit the message to the server
+    socket.emit("chatMessage", message);
+
+    // Update local state
     setNewMessage("");
     setShowInfo(false);
-
-    // Simulate received message
-    setIsTyping(true);
-    setTimeout(() => {
-      const response: Message = {
-        id: Math.random().toString(36).substring(7),
-        text: "This is a simulated response.",
-        sender: "other",
-        timestamp: Date.now(),
-      };
-      setMessages((prev) => [...prev, response]);
-      setIsTyping(false);
-    }, 1000);
   };
 
   return (
     <div className="h-screen w-screen gradient-background text-white flex flex-col">
       <GradientCircles />
-      
-      <div className="flex-1 flex flex-col relative">
+      <div className="flex-1 flex flex-col h-screen relative">
         {/* Header */}
         <div className="glass border-b border-white/10 p-4">
           <div className="container mx-auto flex items-center justify-between">
             <div className="flex items-center gap-4">
               <h2 className="text-xl font-semibold">TransienTalk</h2>
               <button
-                onClick={handleCopyRoomId}
+                onClick={() => {
+                  navigator.clipboard.writeText(roomId || "");
+                  toast.success("Room ID copied!" ,{position : "top-right"});
+                }}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
                 title="Copy Room ID"
               >
@@ -88,7 +98,7 @@ const ChatRoom = () => {
             <GlassButton
               variant="secondary"
               onClick={() => navigate("/create")}
-              className="px-4 py-2 flex items-center gap-2"
+              className="px-4 py-2 flex items-center gap-2 text-white"
             >
               <LogOut className="w-4 h-4" />
               Leave Room
@@ -109,18 +119,18 @@ const ChatRoom = () => {
               </div>
             </div>
           )}
-          
-          <div className="space-y-4">
+
+          <div className="space-y-4 ">
             {messages.map((message) => (
               <div
                 key={message.id}
                 className={`flex ${
-                  message.sender === "me" ? "justify-end" : "justify-start"
+                  message.sender === socket.id ? "justify-end" : "justify-start"
                 }`}
               >
                 <div
                   className={`max-w-[70%] p-4 rounded-2xl animate-slide-up ${
-                    message.sender === "me"
+                    message.sender === socket.id
                       ? "bg-white/20 ml-auto rounded-tr-none"
                       : "bg-black/20 rounded-tl-none"
                   }`}
@@ -132,17 +142,6 @@ const ChatRoom = () => {
                 </div>
               </div>
             ))}
-            {isTyping && (
-              <div className="flex justify-start">
-                <div className="bg-black/20 p-4 rounded-2xl rounded-tl-none animate-pulse">
-                  <div className="flex gap-1">
-                    <div className="w-2 h-2 rounded-full bg-white/60"></div>
-                    <div className="w-2 h-2 rounded-full bg-white/60 animate-bounce" style={{ animationDelay: "0.2s" }}></div>
-                    <div className="w-2 h-2 rounded-full bg-white/60 animate-bounce" style={{ animationDelay: "0.4s" }}></div>
-                  </div>
-                </div>
-              </div>
-            )}
             <div ref={messagesEndRef} />
           </div>
         </div>
