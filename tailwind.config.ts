@@ -78,5 +78,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), 'babel-plugin-styled-components'],
 } satisfies Config;
