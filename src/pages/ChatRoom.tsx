@@ -196,7 +196,7 @@ interface Message {
 }
 
 // Initialize socket connection
-const socket = io("https://transientalk-socket.onrender.com/"); // Replace with your backend URL
+const socket = io("https://devnode.coderkubes.com/"); // Replace with your backend URL
 
 const gf = new GiphyFetch("vlOmO29Rx9nBbHwcWzZY8mq6rWTTBZmi"); // Replace with your Giphy API key
 
@@ -283,7 +283,7 @@ const ChatRoom = () => {
         <div className="glass border-b border-white/10 p-4">
           <div className="container mx-auto flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <h2 className="text-xl font-semibold">TransienTalk</h2>
+              <h2 className="text-xl font-semibold" onClick={() => navigate("/")}>TransienTalk</h2>
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(roomId || "");
