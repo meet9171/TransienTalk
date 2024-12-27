@@ -325,14 +325,10 @@ const ChatRoom = () => {
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex ${message.sender === socket.id ? "justify-end" : "justify-start"
-                  }`}
+                className={`flex justify-start`}
               >
                 <div
-                  className={`max-w-[70%] p-4 rounded-2xl animate-slide-up ${message.sender === socket.id
-                      ? "bg-white/20 ml-auto rounded-tr-none"
-                      : "bg-black/20 rounded-tl-none"
-                    }`}
+                  className={`max-w-[70%] p-4 rounded-2xl animate-slide-up `}
                 >
                   {message.text && <p className="break-words">{message.text}</p>}
                   {message.gifUrl && (
