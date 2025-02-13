@@ -233,10 +233,9 @@ const ChatRoom = () => {
   }, [searchTerm]);
 
 
-  const fetchGIFs = async (query) => {
     try {
       const response = await fetch(
-        `https://tenor.googleapis.com/v2/search?q=${query}&key=${API_KEY}&limit=120`
+        `https://tenor.googleapis.com/v2/search?q=${query}&key=${API_KEY}&limit=99`
       );
       const data = await response.json();
       setGifs(data.results);
