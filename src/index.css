@@ -4,6 +4,7 @@
 @tailwind components;
 @tailwind utilities;
 
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -61,3 +62,13 @@
   background-size: 400% 400%;
   animation: gradient-xy 15s ease infinite;
 }
+
+
+/* @media print {
+ 
+  html,
+  body {
+
+      display: none;
+  }
+} */

@@ -186,6 +186,7 @@ import { toast } from "sonner";
 import { GiphyFetch } from "@giphy/js-fetch-api";
 import { Grid } from "@giphy/react-components";
 
+
 interface Message {
   id: string;
   text?: string;
@@ -199,6 +200,21 @@ interface Message {
 const socket = io("https://devnode.coderkubes.com/"); // Replace with your backend URL
 
 const gf = new GiphyFetch("vlOmO29Rx9nBbHwcWzZY8mq6rWTTBZmi"); // Replace with your Giphy API key
+const API_KEY = "AIzaSyB2-eSDqxUUfGD2hRI25Cc3ebfcZ3us9jI"; // Replace with your API key
+
+// const fetchGif = async () => {
+//   try {
+//     const response = await fetch(
+//       `https://tenor.googleapis.com/v2/search?q=${SEARCH_TERM}&key=${API_KEY}&limit=2`
+//     );
+//     const data = await response.json();
+//     console.log(data);
+
+//     return data.results[0].media_formats.gif.url; // Get GIF URL
+//   } catch (error) {
+//     console.error("Error fetching GIF:", error);
+//   }
+// };
 
 const ChatRoom = () => {
   const { roomId } = useParams();
@@ -208,6 +224,36 @@ const ChatRoom = () => {
   const [showGifPicker, setShowGifPicker] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [showInfo, setShowInfo] = useState(true);
+
+  const [gifs, setGifs] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("trending");
+
+  useEffect(() => {
+    fetchGIFs(searchTerm);
+  }, [searchTerm]);
+
+
+  const fetchGIFs = async (query) => {
+    try {
+      const response = await fetch(
+        `https://tenor.googleapis.com/v2/search?q=${query}&key=${API_KEY}&limit=12`
+      );
+      const data = await response.json();
+      setGifs(data.results);
+    } catch (error) {
+      console.error("Error fetching GIFs:", error);
+    }
+  };
+
+  // document.addEventListener("keyup", (e)=>{
+  //   e.preventDefault();
+  //   console.log(e.keyCode);
+
+  //   if(e.keyCode == 44){
+  //     alert("Screenshot not allowed")
+  //   }
+    
+  // })
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -232,6 +278,8 @@ const ChatRoom = () => {
   // Listen for incoming chat messages
   useEffect(() => {
     socket.on("chatMessage", (msg: Message) => {
+      console.log(msg);
+      
       setMessages((prev) => [...prev, msg]);
     });
 
@@ -274,6 +322,9 @@ const ChatRoom = () => {
     // Hide the GIF picker
     setShowGifPicker(false);
   };
+
+
+ 
 
   return (
     <div className="h-screen w-screen gradient-background text-white flex flex-col">
@@ -325,14 +376,14 @@ const ChatRoom = () => {
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex justify-start`}
+                className={`${socket.id == message.sender ? "flex justify-end" : "flex justify-start"} `}
               >
                 <div
                   className={`max-w-[70%] p-4 rounded-2xl animate-slide-up `}
                 >
                   {message.text && <p className="break-words">{message.text}</p>}
                   {message.gifUrl && (
-                    <img src={message.gifUrl} alt="GIF" className="rounded-lg"/>
+                    <img src={message.gifUrl} alt="GIF" className="rounded-lg" />
                   )}
                   <span className="text-xs text-white/60 mt-1 block">
                     {new Date(message.timestamp).toLocaleTimeString()}
@@ -349,7 +400,7 @@ const ChatRoom = () => {
             className="mx-auto w-screen bg-transparent p-4 rounded-t-lg shadow-lg overflow-y-auto"
             style={{ height: "50%" }}
           >
-            <Grid
+            {/* <Grid
               fetchGifs={(offset) => gf.trending({ offset, limit: 10 })}
               width={800}
               columns={6}
@@ -358,7 +409,20 @@ const ChatRoom = () => {
                 e.preventDefault(); // Prevent default behavior (redirect)
                 sendGif(gif.images.fixed_height.url); // Send the GIF URL as a message
               }}
-            />
+            /> */}
+
+            <div className="gif-grid">
+              {gifs.map((gif) => (
+                <img
+                  key={gif.id}
+                  style={{ height: '100px' }}
+                  src={gif.media_formats.gif.url} // Tenor provides optimized GIF formats
+                  alt="GIF"
+                  className="gif-item"
+                  onClick={() => sendGif(gif.media_formats.gif.url)}
+                />
+              ))}
+            </div>
           </div>
         )}
 
@@ -375,18 +439,31 @@ const ChatRoom = () => {
                 className="flex-1 p-3 bg-white/10 rounded-lg border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/30"
               />
               <GlassButton
-                onClick={() => setShowGifPicker(!showGifPicker)}
-                className="px-3 hover:scale-105 transition-all duration-300"
-              >
-                <ImageIcon className="w-5 h-5" />
-              </GlassButton>
-              <GlassButton
                 onClick={handleSend}
                 className="px-6 hover:scale-105 transition-all duration-300"
               >
                 <Send className="w-5 h-5" />
               </GlassButton>
+              <GlassButton
+                onClick={() => setShowGifPicker(!showGifPicker)}
+                className="px-3 hover:scale-105 transition-all duration-300"
+              >
+                <ImageIcon className="w-5 h-5" />
+              </GlassButton>
+              <input
+                type="text"
+                placeholder="Search GIFs..."
+                value={searchTerm}
+                style={{backgroundColor:"rgb(255 255 255 / 0.1)", padding:"10px", borderRadius:"8px"}}
+                onChange={(e) => {
+                  const value = e.target.value.trim(); // Remove leading/trailing spaces
+                  setSearchTerm(value || "trending"); // If empty, fallback to "trending"
+                }}
+              
+                className="search-input"
+              />
             </div>
+
           </div>
         </div>
 
@@ -402,7 +479,7 @@ const ChatRoom = () => {
           </div>
         )} */}
 
-        
+
 
       </div>
     </div>
