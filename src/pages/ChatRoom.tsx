@@ -337,7 +337,7 @@ const ChatRoom = () => {
               <h2 className="text-xl font-semibold" onClick={() => navigate("/")}>TransienTalk</h2>
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(roomId || "");
+                  navigator.clipboard.writeText(`https://transientalk.netlify.app/chat/${roomId}` || "");
                   toast.success("Room ID copied!", { position: "top-right" });
                 }}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
