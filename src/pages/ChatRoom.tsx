@@ -236,7 +236,7 @@ const ChatRoom = () => {
   const fetchGIFs = async (query) => {
     try {
       const response = await fetch(
-        `https://tenor.googleapis.com/v2/search?q=${query}&key=${API_KEY}&limit=12`
+        `https://tenor.googleapis.com/v2/search?q=${query}&key=${API_KEY}&limit=120`
       );
       const data = await response.json();
       setGifs(data.results);
@@ -411,11 +411,11 @@ const ChatRoom = () => {
               }}
             /> */}
 
-            <div className="gif-grid">
+            <div className="gif-grid" style={{width: 'auto', display:'flex', flexWrap: 'wrap'}}>
               {gifs.map((gif) => (
                 <img
                   key={gif.id}
-                  style={{ height: '100px' }}
+                  style={{ height: '120px' }}
                   src={gif.media_formats.gif.url} // Tenor provides optimized GIF formats
                   alt="GIF"
                   className="gif-item"
