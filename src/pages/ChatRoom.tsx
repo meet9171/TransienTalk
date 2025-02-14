@@ -186,6 +186,8 @@ import { toast } from "sonner";
 import { GiphyFetch } from "@giphy/js-fetch-api";
 import { Grid } from "@giphy/react-components";
 
+import dotenv from 'dotenv'
+// dotenv.config();
 
 interface Message {
   id: string;
@@ -200,7 +202,7 @@ interface Message {
 const socket = io("https://devnode.coderkubes.com/"); // Replace with your backend URL
 
 const gf = new GiphyFetch("vlOmO29Rx9nBbHwcWzZY8mq6rWTTBZmi"); // Replace with your Giphy API key
-const API_KEY = "AIzaSyB2-eSDqxUUfGD2hRI25Cc3ebfcZ3us9jI"; // Replace with your API key
+const API_KEY = import.meta.env.VITE_API_KEY;
 
 // const fetchGif = async () => {
 //   try {
